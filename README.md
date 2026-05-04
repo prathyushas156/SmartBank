@@ -92,3 +92,29 @@ Open the Streamlit URL shown in the terminal (usually `http://localhost:8501`).
 ```powershell
 $env:API_BASE_URL="http://127.0.0.1:5000"
 ```
+
+## Demo
+- Video: https://drive.google.com/file/d/1n_hRZcVpePckRTN0K96YcwjFyid9YSXh/view?usp=drivesdk 
+
+## Screenshots
+
+###Register
+![Register](assets/register.png)
+
+### Login
+![Login](assets/login.png)
+
+### Account
+![Account](assets/account.png)
+
+### Deposit
+![Deposit](assets/deposit.png)
+
+### Withdraw
+![Withdraw](assets/withdraw.png)
+
+### Dashboard
+![Dashboard](assets/dashboard.png)
+
+### Analytics
+![Analytics](assets/analytics.png)
