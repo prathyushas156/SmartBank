@@ -39,6 +39,22 @@ def handle_response(res):
         st.error(data)
 
 
+def safe_request(method, endpoint, **kwargs):
+    url = f"{API_BASE_URL}{endpoint}"
+    try:
+        return requests.request(method, url, timeout=15, **kwargs)
+    except requests.exceptions.ConnectionError:
+        st.error(
+            f"Cannot connect to backend API at {API_BASE_URL}. "
+            "Please verify API_BASE_URL in Streamlit secrets and confirm your Flask API is deployed/running."
+        )
+    except requests.exceptions.Timeout:
+        st.error("Backend API request timed out. Please try again in a few seconds.")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Request failed: {e}")
+    return None
+
+
 # Register
 if menu == "Register":
     name = st.text_input("Name")
@@ -46,9 +62,13 @@ if menu == "Register":
     password = st.text_input("Password", type="password")
 
     if st.button("Register"):
-        res = requests.post(f"{API_BASE_URL}/register",
-                            json={"name": name, "email": email, "password": password})
-        handle_response(res)
+        res = safe_request(
+            "POST",
+            "/register",
+            json={"name": name, "email": email, "password": password}
+        )
+        if res is not None:
+            handle_response(res)
 
 
 # Login
@@ -57,8 +77,13 @@ elif menu == "Login":
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        res = requests.post(f"{API_BASE_URL}/login",
-                            json={"email": email, "password": password})
+        res = safe_request(
+            "POST",
+            "/login",
+            json={"email": email, "password": password}
+        )
+        if res is None:
+            st.stop()
 
         try:
             data = res.json()
@@ -74,15 +99,16 @@ elif menu == "Login":
 # Fetch accounts
 account_ids = []
 if st.session_state.user_id:
-    res = requests.get(f"{API_BASE_URL}/accounts/{st.session_state.user_id}")
-    try:
-        data = res.json()
-        if data:
-            df_accounts = pd.DataFrame(data)
-            st.dataframe(df_accounts)
-            account_ids = df_accounts["account_id"].tolist()
-    except:
-        pass
+    res = safe_request("GET", f"/accounts/{st.session_state.user_id}")
+    if res is not None:
+        try:
+            data = res.json()
+            if data:
+                df_accounts = pd.DataFrame(data)
+                st.dataframe(df_accounts)
+                account_ids = df_accounts["account_id"].tolist()
+        except Exception:
+            st.error("Could not parse accounts response from backend.")
 
 
 # Deposit
@@ -95,9 +121,13 @@ elif menu == "Deposit":
             amount = st.number_input("Amount")
 
             if st.button("Deposit"):
-                res = requests.post(f"{API_BASE_URL}/deposit",
-                                    json={"account_id": account_id, "amount": amount})
-                handle_response(res)
+                res = safe_request(
+                    "POST",
+                    "/deposit",
+                    json={"account_id": account_id, "amount": amount}
+                )
+                if res is not None:
+                    handle_response(res)
 
 
 # Withdraw
@@ -110,9 +140,13 @@ elif menu == "Withdraw":
             amount = st.number_input("Amount")
 
             if st.button("Withdraw"):
-                res = requests.post(f"{API_BASE_URL}/withdraw",
-                                    json={"account_id": account_id, "amount": amount})
-                handle_response(res)
+                res = safe_request(
+                    "POST",
+                    "/withdraw",
+                    json={"account_id": account_id, "amount": amount}
+                )
+                if res is not None:
+                    handle_response(res)
 
 
 # Dashboard
