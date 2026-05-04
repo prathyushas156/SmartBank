@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from models.user_model import create_user, login_user
+import mysql.connector
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -25,7 +26,9 @@ def register():
 
     except Exception as e:
         print(e)
-        return jsonify({"error": "Server error"}), 500
+        if isinstance(e, mysql.connector.Error):
+            return jsonify({"error": f"Database error: {e}"}), 500
+        return jsonify({"error": f"Server error: {type(e).__name__}"}), 500
 
 
 @auth_bp.route('/login', methods=['POST'])
@@ -48,4 +51,6 @@ def login():
 
     except Exception as e:
         print(e)
-        return jsonify({"error": "Server error"}), 500
+        if isinstance(e, mysql.connector.Error):
+            return jsonify({"error": f"Database error: {e}"}), 500
+        return jsonify({"error": f"Server error: {type(e).__name__}"}), 500
