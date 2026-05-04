@@ -9,7 +9,15 @@ st.set_page_config(page_title="SmartBank", layout="wide")
 
 st.title("🏦 SmartBank System")
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
+def get_api_base_url():
+    # Streamlit Cloud secrets take priority.
+    if "API_BASE_URL" in st.secrets:
+        return str(st.secrets["API_BASE_URL"]).rstrip("/")
+    # Local env fallback.
+    return os.getenv("API_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
+
+
+API_BASE_URL = get_api_base_url()
 
 # Session
 if "user_id" not in st.session_state:
